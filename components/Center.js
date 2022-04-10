@@ -1,24 +1,41 @@
-import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
-import { shuffle } from "lodash";
+import { useSession } from 'next-auth/react'
+import React, { useEffect, useState } from 'react'
+import { shuffle } from 'lodash'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { playlistIdState, playlistState } from '../atoms/playlistAtom'
+import useSpotify from '../hooks/useSpotify'
 
 const colors = [
-  "from-indigo-500",
-  "from-blue-500",
-  "from-green-500",
-  "from-red-500",
-  "from-yellow-500",
-  "from-pink-500",
-  "from-purple-500",
-];
+  'from-indigo-500',
+  'from-blue-500',
+  'from-green-500',
+  'from-red-500',
+  'from-yellow-500',
+  'from-pink-500',
+  'from-purple-500',
+]
 
 function Center() {
-  const { data: session } = useSession();
-  const [color, setColor] = useState(null);
+  const { data: session } = useSession()
+  const spotifyApi = useSpotify()
+  const [color, setColor] = useState(null)
+  const playlistId = useRecoilValue(playlistIdState)
+  const [playlist, setPlaylist] = useRecoilState(playlistState)
 
   useEffect(() => {
-    setColor(shuffle(colors).pop());
-  }, []);
+    setColor(shuffle(colors).pop())
+  }, [playlistId])
+
+  useEffect(() => {
+    spotifyApi
+      .getPlaylist(playlistId)
+      .then((data) => {
+        setPlaylist(data.body)
+      })
+      .catch((error) => console.log('Something went wrong!', error))
+  }, [spotifyApi, playlistId])
+
+  console.log(playlist)
 
   return (
     <div className=" flex-grow text-white">
@@ -43,7 +60,7 @@ function Center() {
         <div>hello</div>
       </section>
     </div>
-  );
+  )
 }
 
-export default Center;
+export default Center
